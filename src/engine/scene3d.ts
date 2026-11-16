@@ -12,6 +12,7 @@ import {
   Color,
   DirectionalLight,
   HemisphereLight,
+  InstancedBufferAttribute,
   Mesh,
   type Material,
   MeshStandardMaterial,
@@ -157,7 +158,7 @@ export function buildMesh(
     const n = unit(panel.normal);
     rank = scene.rank[id] ?? 0;
     // The stack grows along the sheet's front normal, or against it for a flipped facet.
-    stackUpDir = isFlipped(panel.facet) ? mul(n, -1) : n;
+    stackUpDir = mul(n, scene.stackDirection?.[id] ?? (isFlipped(panel.facet) ? -1 : 1));
     // A facet may bend a little: each corner takes the normal of its own
     // corner triangle, and the ring blends towards the facet's mean.
     const count0 = panel.points.length;
@@ -346,6 +347,7 @@ export class Scene3d implements SheetScene {
   private readonly mesh: Mesh;
   private readonly lines: LineSegments2;
   private readonly lineMaterial: LineMaterial;
+  private readonly lineThickness = { value: 0 };
   private readonly ground: Mesh;
   private pixelRatio = 1;
   private readonly raycaster = new Raycaster();
@@ -420,7 +422,10 @@ export class Scene3d implements SheetScene {
     };
     this.mesh = new Mesh(new BufferGeometry(), material);
     this.mesh.castShadow = true;
-    this.mesh.receiveShadow = true;
+    // The paper is thinner than the shadow map's resolution. Self-shadows
+    // create a stippled pattern where its layers touch; the ground can still
+    // receive the sheet's shadow when enabled.
+    this.mesh.receiveShadow = false;
     this.scene.add(this.mesh);
 
     // Lines with a width in pixels, the same on any screen.
@@ -431,6 +436,27 @@ export class Scene3d implements SheetScene {
       opacity: 0.6,
       worldUnits: false,
     });
+    // Give edges the same layer depth as their paper face. Otherwise a line
+    // from a buried facet can show through a higher layer.
+    this.lineMaterial.onBeforeCompile = (shader) => {
+      shader.uniforms['rankBias'] = { value: RANK_BIAS };
+      shader.uniforms['paperHalfThickness'] = this.lineThickness;
+      shader.vertexShader = shader.vertexShader
+        .replace('attribute vec3 instanceStart;',
+          'attribute float instanceRank;\nattribute vec3 instanceUp;\n' +
+          'attribute vec3 instanceNormal;\nuniform float rankBias;\n' +
+          'uniform float paperHalfThickness;\nattribute vec3 instanceStart;')
+        .replace('gl_Position = clip;',
+          'gl_Position = clip;\n' +
+          'vec4 edgePosition = (position.y < 0.5) ? start : end;\n' +
+          'vec3 upView = normalize(normalMatrix * instanceUp);\n' +
+          'vec3 faceNormal = normalize(normalMatrix * instanceNormal);\n' +
+          'float facing = dot(upView, normalize(-edgePosition.xyz));\n' +
+          'float faceSide = dot(faceNormal, -edgePosition.xyz) >= 0.0 ? 1.0 : -1.0;\n' +
+          'vec4 facePosition = edgePosition + vec4(faceNormal * faceSide * paperHalfThickness, 0.0);\n' +
+          'gl_Position.z += (projectionMatrix * facePosition).z - (projectionMatrix * edgePosition).z;\n' +
+          'gl_Position.z += ((facing > 0.0 ? -1.0 : 1.0) * instanceRank * rankBias - 0.000001) * gl_Position.w;');
+    };
     this.lines = new LineSegments2(new LineSegmentsGeometry(), this.lineMaterial);
     this.scene.add(this.lines);
 
@@ -480,15 +506,31 @@ export class Scene3d implements SheetScene {
     this.mesh.geometry = geometry;
 
     const linePositions = new Float32Array(solved.edges.length * 6);
+    const lineRanks = new Float32Array(solved.edges.length);
+    const lineUps = new Float32Array(solved.edges.length * 3);
+    const lineNormals = new Float32Array(solved.edges.length * 3);
+    const panels = new Map(solved.panels.map((panel) => [panel.facet.id, panel]));
     solved.edges.forEach((e, i) => {
       linePositions.set([e.a.x, e.a.y, e.a.z, e.b.x, e.b.y, e.b.z], i * 6);
+      const panel = e.facetId === undefined ? undefined : panels.get(e.facetId);
+      const normal = panel ? unit(panel.normal) : { x: 0, y: 0, z: 1 };
+      const direction = panel
+        ? solved.stackDirection?.[panel.facet.id] ?? (isFlipped(panel.facet) ? -1 : 1)
+        : 1;
+      lineRanks[i] = e.facetId === undefined ? 0 : solved.rank[e.facetId] ?? 0;
+      lineNormals.set([normal.x, normal.y, normal.z], i * 3);
+      lineUps.set([normal.x * direction, normal.y * direction, normal.z * direction], i * 3);
     });
     const lineGeometry = new LineSegmentsGeometry();
     if (solved.edges.length > 0) lineGeometry.setPositions(linePositions);
+    lineGeometry.setAttribute('instanceRank', new InstancedBufferAttribute(lineRanks, 1));
+    lineGeometry.setAttribute('instanceUp', new InstancedBufferAttribute(lineUps, 3));
+    lineGeometry.setAttribute('instanceNormal', new InstancedBufferAttribute(lineNormals, 3));
     this.lines.geometry.dispose();
     this.lines.geometry = lineGeometry;
     this.lines.visible = solved.edges.length > 0;
     this.lineMaterial.color = new Color(style.ink);
+    this.lineThickness.value = style.thickness / 2;
 
     this.placeCamera(solved, orbit);
     this.placeGround(solved, frame, orbit, style.shadow);

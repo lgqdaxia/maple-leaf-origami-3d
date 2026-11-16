@@ -1,3 +1,6 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 
-export default defineConfig({ base: './' });
+export default defineConfig({
+  base: "./",
+  optimizeDeps: { include: ["three/addons/exporters/GLTFExporter.js"] },
+});

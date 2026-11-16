@@ -151,6 +151,32 @@ h1 span {
   background: #b65a42;
   margin-bottom: 10px;
 }
+.finished-button {
+  background: #b75039;
+  color: #fff;
+  border: 0;
+  padding: 10px 14px;
+  font-size: 11px;
+}
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+.result-actions button {
+  flex: 1;
+  white-space: nowrap;
+  background: #fffefa;
+  border: 1px solid #d9c5b7;
+  padding: 10px 8px;
+  color: #9e4d36;
+  font-size: 11px;
+}
+.result-actions button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 318px;

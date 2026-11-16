@@ -1,4 +1,4 @@
-import { area, centroid, containsPoint } from './geometry';
+import { area, centroid } from './geometry';
 import { type PaperState, currentPolygon, foldedPoints } from './paper';
 import { type ViewFrame } from './sequence';
 import { type Hinge, type Panel, type StepAnimation, type Vec3, hinges, stepPose } from './rigid';
@@ -177,6 +177,9 @@ export interface SceneOptions {
 export interface SceneEdge {
   readonly a: Vec3;
   readonly b: Vec3;
+  readonly facetId?: number;
+  readonly aIndex?: number;
+  readonly bIndex?: number;
 }
 
 /**
@@ -206,12 +209,12 @@ export interface SolvedScene {
   /** Shade of every facet's corners, by facet id. */
   readonly shade: Record<number, FacetShade>;
   /**
-   * Each facet's place in its stack, by facet id: how many facets lie
-   * under it in the flat model where it sits. Layers that the solver leaves
-   * almost coincident are drawn in this order, not in the order of their
-   * last fraction of a millimetre.
+   * Each facet's layer in the flat model. This also orders facets that
+   * overlap away from their centres.
    */
   readonly rank: Record<number, number>;
+  /** Direction of stack growth relative to a panel's normal during a fold. */
+  readonly stackDirection?: Record<number, number>;
   /** False while a step plays: the picture is a frame of a swing, not a pose to frame the camera on. */
   readonly settled: boolean;
   /** The facet that was held still. */
@@ -252,7 +255,7 @@ function insidePanel(panel: Panel, q: Vec3): boolean {
  * layers, which is what screen-space occlusion would show if paper were
  * not too thin for it.
  */
-function occlusionShade(panels: readonly Panel[], size: number): Record<number, FacetShade> {
+export function occlusionShade(panels: readonly Panel[], size: number): Record<number, FacetShade> {
   const reach = SHADE_REACH * size;
   const bodies = panels.map((panel) => {
     let centre: Vec3 = { x: 0, y: 0, z: 0 };
@@ -314,20 +317,12 @@ function occlusionShade(panels: readonly Panel[], size: number): Record<number, 
 
 const rankCache = new WeakMap<PaperState, Record<number, number>>();
 
-/** How many facets lie under each facet at its centre, in the flat model. */
+/** The layer order in the flat model, including partially overlapping facets. */
 export function stackRank(state: PaperState): Record<number, number> {
   const cached = rankCache.get(state);
   if (cached) return cached;
-  const folded = state.facets.map((f) => ({ f, poly: currentPolygon(f) }));
   const result: Record<number, number> = {};
-  for (const { f, poly } of folded) {
-    const c = centroid(poly);
-    let below = 0;
-    for (const other of folded) {
-      if (other.f.z < f.z && containsPoint(other.poly, c)) below++;
-    }
-    result[f.id] = below;
-  }
+  for (const facet of state.facets) result[facet.id] = facet.z;
   rankCache.set(state, result);
   return result;
 }
@@ -393,7 +388,9 @@ export function solvedScene(state: PaperState, options: SceneOptions): SolvedSce
       // Each crease is shared by two facets; draw it once, from the lower id.
       if (hinge !== null && hinge.p !== panel.facet.id && hinge.q !== panel.facet.id) continue;
       if (hinge !== null && Math.min(hinge.p, hinge.q) !== panel.facet.id) continue;
-      edges.push({ a: panel.points[i] as Vec3, b: panel.points[(i + 1) % poly.length] as Vec3 });
+      const j = (i + 1) % poly.length;
+      edges.push({ a: panel.points[i] as Vec3, b: panel.points[j] as Vec3,
+        facetId: panel.facet.id, aIndex: i, bIndex: j });
     }
   }
   // While a step plays the sheet may reach further than its end state does.
