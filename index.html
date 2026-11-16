@@ -4,56 +4,185 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f6f2e9" />
-    <meta name="description" content="一片枫叶的交互式折纸练习：旋转纸张，逐步观察折叠。" />
+    <meta
+      name="description"
+      content="Brian Chan 枫叶的 34 步 3D 折纸演示，包含可旋转的成品与模型下载。"
+    />
     <title>纸间 · 枫叶折纸练习</title>
-    <script type="module" crossorigin src="./assets/index-S8PjbwLD.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CjuuSILt.css">
+    <script type="module" crossorigin src="./assets/index-B26nULjv.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D69bsnPu.css">
   </head>
   <body>
     <div id="app">
       <header class="site-header wrap">
-        <a class="brand" href="#top" aria-label="纸间，返回顶部"><span class="brand-mark">折</span><span>纸间 <small>PAPER STUDIES</small></span></a>
-        <a class="source-link" href="https://web.mit.edu/chosetec/www/origami/diagrams/mapleleaf/" target="_blank" rel="noreferrer">查看原图 <span aria-hidden="true">↗</span></a>
+        <a class="brand" href="#top" aria-label="纸间，返回顶部"
+          ><span class="brand-mark">折</span
+          ><span>纸间 <small>PAPER STUDIES</small></span></a
+        >
+        <a
+          class="source-link"
+          href="https://web.mit.edu/chosetec/www/origami/diagrams/mapleleaf/"
+          target="_blank"
+          rel="noreferrer"
+          >查看原图 <span aria-hidden="true">↗</span></a
+        >
       </header>
 
       <main id="top" class="wrap">
         <section class="intro">
-          <div><p class="eyebrow"><span></span> AN ORIGAMI STUDY <i>／</i> 01</p><h1>一片纸，慢慢变成<span>枫叶。</span></h1><p class="lede">把复杂的折叠放慢一点。从不同角度观察每一层纸，一步一步，找到它的形状。</p></div>
-          <div class="intro-note"><span>THE MAPLE LEAF</span><p>Brian Chan 设计<br />交互式折叠练习</p><div class="note-line"></div><span>34 个原图步骤</span></div>
+          <div>
+            <p class="eyebrow"><span></span> AN ORIGAMI STUDY <i>／</i> 01</p>
+            <h1>一片纸，慢慢变成<span>枫叶。</span></h1>
+            <p class="lede">
+              把复杂的折叠放慢一点。从不同角度观察每一层纸，一步一步，找到它的形状。
+            </p>
+          </div>
+          <div class="intro-note">
+            <span>THE MAPLE LEAF</span>
+            <p>Brian Chan 设计<br />完整 34 步交互演示</p>
+            <button id="show-finished" class="finished-button" type="button">
+              查看最终枫叶 ↗
+            </button>
+          </div>
         </section>
 
         <section class="workspace" aria-label="折纸播放器">
           <div class="visual-column">
             <div class="stage" id="stage">
-              <div class="stage-top"><span><span class="live-dot"></span> 3D FOLDING STUDIO</span><span id="stage-step">准备开始</span></div>
-              <div class="scene" id="scene" aria-label="可拖动旋转的三维折纸模型"></div>
-              <div class="stage-bottom"><span><span class="drag-icon">↗</span> 拖动旋转 <i>·</i> 滚轮缩放</span><button id="reset-view" class="reset-view" type="button">重置视角 <span>↺</span></button></div>
+              <div class="stage-top">
+                <span><span class="live-dot"></span> 3D FOLDING STUDIO</span
+                ><span id="stage-step">准备开始</span>
+              </div>
+              <div
+                class="scene"
+                id="scene"
+                aria-label="可拖动旋转的三维折纸模型"
+              ></div>
+              <div class="stage-bottom">
+                <span
+                  ><span class="drag-icon">↗</span> 拖动旋转
+                  <i>·</i> 滚轮缩放</span
+                ><button id="reset-view" class="reset-view" type="button">
+                  重置视角 <span>↺</span>
+                </button>
+              </div>
             </div>
             <div class="player">
-              <div class="player-top"><span class="player-label">FOLDING SEQUENCE</span><span class="player-count" id="count">00 <i>/</i> 34</span></div>
-              <input id="progress" class="progress" type="range" min="0" max="8" value="0" step="1" aria-label="选择已完成步骤" />
-              <div class="player-bottom"><span class="player-caption">已完成 <strong id="completed">0</strong> 步 <i>／</i> 可预览 8 步</span><div class="controls"><button id="prev" class="icon-button" type="button" aria-label="上一步" title="上一步"><span aria-hidden="true">↤</span></button><button id="play" class="play-button" type="button" aria-label="播放" title="播放"><span id="play-icon" aria-hidden="true">▶</span></button><button id="next" class="icon-button" type="button" aria-label="下一步" title="下一步"><span aria-hidden="true">↦</span></button></div><span class="keyboard-hint">空格播放 <i>·</i> ← → 切换</span></div>
+              <div class="player-top">
+                <span class="player-label">FOLDING SEQUENCE</span
+                ><span class="player-count" id="count">00 <i>/</i> 34</span>
+              </div>
+              <input
+                id="progress"
+                class="progress"
+                type="range"
+                min="0"
+                max="34"
+                value="34"
+                step="1"
+                aria-label="选择折纸步骤"
+              />
+              <div class="player-bottom">
+                <span class="player-caption"
+                  >已完成 <strong id="completed">34</strong> 步 <i>／</i> 共 34
+                  步</span
+                >
+                <div class="controls">
+                  <button
+                    id="prev"
+                    class="icon-button"
+                    type="button"
+                    aria-label="上一步"
+                    title="上一步"
+                  >
+                    <span aria-hidden="true">↤</span></button
+                  ><button
+                    id="play"
+                    class="play-button"
+                    type="button"
+                    aria-label="播放"
+                    title="播放"
+                  >
+                    <span id="play-icon" aria-hidden="true">▶</span></button
+                  ><button
+                    id="next"
+                    class="icon-button"
+                    type="button"
+                    aria-label="下一步"
+                    title="下一步"
+                  >
+                    <span aria-hidden="true">↦</span>
+                  </button>
+                </div>
+                <span class="keyboard-hint">空格播放 <i>·</i> ← → 切换</span>
+              </div>
             </div>
           </div>
 
           <aside class="instructions" aria-live="polite">
-            <div class="instruction-top"><span id="step-tag">PREPARATION</span><span class="small-star">✳</span></div>
+            <div class="instruction-top">
+              <span id="step-tag">PREPARATION</span
+              ><span class="small-star">✳</span>
+            </div>
             <div class="step-number" id="step-number">00 <span>/ 34</span></div>
             <h2 id="step-title">准备一张方纸</h2>
-            <p class="step-description" id="step-description">点击播放，或选择下一步。你可以随时拖动纸张，换个角度观察。</p>
+            <p class="step-description" id="step-description">
+              点击播放，或选择下一步。你可以随时拖动纸张，换个角度观察。
+            </p>
             <div class="rule"></div>
-            <div class="tip"><span class="tip-icon">✳</span><div><strong>观察提示</strong><p id="step-hint">纸张的两面使用不同颜色，方便分辨翻面和纸层。</p></div></div>
-            <div class="availability"><span class="availability-kicker">PROTOTYPE NOTE <span>↗</span></span><p><strong>目前做到第 8 步</strong><br />第 9 步的隐藏纸层暂时无法可靠判断，因此后续动作还没有加入。</p></div>
+            <div class="tip">
+              <span class="tip-icon">✳</span>
+              <div>
+                <strong>观察提示</strong>
+                <p id="step-hint">
+                  纸张的两面使用不同颜色，方便分辨翻面和纸层。
+                </p>
+              </div>
+            </div>
+            <div class="availability">
+              <span class="availability-kicker" id="pose-type"
+                >3D 关键帧示意</span
+              >
+              <p>
+                <strong>34 步，直到一片枫叶</strong><br />第 9～34
+                步参照原图制作关键帧；复杂内藏折的隐藏层与运动采用近似示意，尚未经实纸验证。
+              </p>
+            </div>
+            <div class="result-actions">
+              <button id="restart" type="button">从头播放 ↻</button
+              ><button id="download-model" type="button">下载枫叶 GLB ↓</button>
+            </div>
           </aside>
         </section>
 
         <section class="steps-section" aria-labelledby="steps-heading">
-          <div class="section-head"><div><p class="eyebrow"><span></span> YOUR FOLDING PATH</p><h2 id="steps-heading">折叠路径<span> / THE STEPS</span></h2></div><p>选择步骤，跳转到完成后的状态。</p></div>
+          <div class="section-head">
+            <div>
+              <p class="eyebrow"><span></span> YOUR FOLDING PATH</p>
+              <h2 id="steps-heading">折叠路径<span> / THE STEPS</span></h2>
+            </div>
+            <p>选择步骤，跳转到完成后的状态。</p>
+          </div>
           <div id="steps" class="steps-list"></div>
-          <div class="unfinished"><span class="unfinished-number">09—34</span><div><strong>接下来的步骤</strong><p>从第 9 步开始，原图中的隐藏层次还需进一步确认。</p></div><a href="https://web.mit.edu/chosetec/www/origami/diagrams/mapleleaf/images/mapleleaf2.jpg" target="_blank" rel="noreferrer">查看原图第 9 步 ↗</a></div>
+          <div class="unfinished">
+            <span class="unfinished-number">34 / 34</span>
+            <div>
+              <strong>枫叶已成形</strong>
+              <p>侧叶展开、叶柄收细，最后留下自然弯曲的叶柄。</p>
+            </div>
+            <a
+              href="https://web.mit.edu/chosetec/www/origami/diagrams/mapleleaf/images/mapleleaf5.jpg"
+              target="_blank"
+              rel="noreferrer"
+              >对照原作成品 ↗</a
+            >
+          </div>
         </section>
       </main>
-      <footer class="wrap footer"><span>纸间 <i>／</i> PAPER STUDIES</span><span>原作：Brian Chan <i>·</i> 3D 几何基于 Origamio</span></footer>
+      <footer class="wrap footer">
+        <span>纸间 <i>／</i> PAPER STUDIES</span
+        ><span>原作：Brian Chan <i>·</i> 3D 几何基于 Origamio</span>
+      </footer>
     </div>
   </body>
 </html>
